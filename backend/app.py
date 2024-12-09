@@ -31,9 +31,9 @@ app = Flask(__name__)
 CORS(app)
 
 # Fonction pour générer un code via LangChain
-def generate_code(language, concept, level):
+def generate_code(language, concept, level, tavily_info):
     prompt_template = PromptTemplate.from_template(
-        f"\u00c9cris un exemple {level} en {language} sur {concept}, avec des commentaires détaillés expliquant le code."
+        f"\u00c9cris un exemple {level} en {language} sur {concept}, avec des commentaires détaillés expliquant le code. Utilise ces informations supplémentaires : {tavily_info} et ajoute les urls consultés à la fin"
     )
     prompt = prompt_template.format()
 
@@ -44,19 +44,26 @@ def generate_code(language, concept, level):
     except Exception as e:
         return f"Erreur lors de la génération : {e}"
 
-# Fonction pour exécuter une recherche d'informations
-def perform_search(query, max_results=5):
-    try:
-        results = ddg.text(query, max_results=max_results)
-        return [result["href"] for result in results]
-    except Exception as e:
-        return [f"Erreur lors de la recherche : {e}"]
-
 # Fonction pour interroger Tavily
 def ask_tavily(query):
     try:
         result = client_tavily.search(query, include_answer=True)
-        return result.get("answer", "Pas de réponse trouvée.")
+
+        urls = result.get("sources", [])
+
+        # Formater les URLs en texte
+        urls_text = "\n".join([f"Source: {url}" for url in urls])
+
+        # Afficher la réponse brute de Tavily
+        print("Réponse brute de Tavily:", result)
+
+        # Récupérer la réponse ou renvoyer un message si rien n'est trouvé
+        answer = result.get("answer", "Pas de réponse trouvée.")
+
+        # Ajouter les URLs à la fin de la réponse
+        full_answer = f"{answer}\n\n{urls_text}"
+
+        return full_answer
     except Exception as e:
         return f"Erreur avec Tavily : {e}"
 
@@ -68,30 +75,13 @@ def generate():
     concept = data.get('concept')
     level = data.get('level')
 
-    # Appelle la fonction de génération
-    response = generate_code(language, concept, level)
+    # Poser une question à Tavily avec les informations reçues du front-end
+    query = f"Donne-moi des informations pour le langage {language}, concept {concept}, niveau {level}"
+    tavily_info = ask_tavily(query)
+
+    # Appelle la fonction de génération avec les informations de Tavily
+    response = generate_code(language, concept, level, tavily_info)
     return jsonify({'code': response})
-
-# Route pour rechercher des informations
-@app.route('/search', methods=['POST'])
-def search():
-    data = request.json
-    query = data.get('query')
-    max_results = data.get('max_results', 5)
-
-    # Effectue une recherche
-    results = perform_search(query, max_results)
-    return jsonify({'results': results})
-
-# Route pour utiliser Tavily
-@app.route('/ask', methods=['POST'])
-def ask():
-    data = request.json
-    query = data.get('query')
-
-    # Pose une question via Tavily
-    response = ask_tavily(query)
-    return jsonify({'answer': response})
 
 if __name__ == '__main__':
     app.run(debug=True)
