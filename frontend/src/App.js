@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import "./App.css";
+import "./App.css"; // Assurez-vous que le CSS soit inclus
 
 function App() {
   const [language, setLanguage] = useState("");
@@ -15,10 +15,9 @@ function App() {
       const response = await axios.post("http://127.0.0.1:5000/generate", {
         language,
         concept,
-        level
+        level,
       });
 
-      // Affichez le code généré dans l'état
       setGeneratedCode(response.data.code);
     } catch (error) {
       console.error("Erreur lors de la génération :", error);
@@ -26,50 +25,57 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      <h1 className="title">Générateur de Code avec OpenAI</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>
-            Langage :
+    <div className="chatgpt-container">
+      <header className="chatgpt-header">
+        <h1>Générateur de Code</h1>
+      </header>
+      <main className="chatgpt-main">
+        <form className="chatgpt-form" onSubmit={handleSubmit}>
+          <div className="chatgpt-input-group">
+            <label htmlFor="language">Langage :</label>
             <input
+              id="language"
               type="text"
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
+              placeholder="Exemple : Python, JavaScript"
               required
             />
-          </label>
-
-          <label>
-            Concept :
+          </div>
+          <div className="chatgpt-input-group">
+            <label htmlFor="concept">Concept :</label>
             <input
+              id="concept"
               type="text"
               value={concept}
               onChange={(e) => setConcept(e.target.value)}
+              placeholder="Exemple : Algorithme de tri"
               required
             />
-          </label>
-
-          <label>
-            Niveau :
+          </div>
+          <div className="chatgpt-input-group">
+            <label htmlFor="level">Niveau :</label>
             <input
+              id="level"
               type="text"
               value={level}
               onChange={(e) => setLevel(e.target.value)}
+              placeholder="Exemple : Débutant, Avancé"
               required
             />
-          </label>
-        </div>
-        <button type="submit">Générer le code</button>
-      </form>
+          </div>
+          <button className="chatgpt-button" type="submit">
+            Générer
+          </button>
+        </form>
 
-      {generatedCode && (
-        <div className="generated-code-container">
-          <h2>Code généré :</h2>
-          <pre>{generatedCode}</pre>
-        </div>
-      )}
-
+        {generatedCode && (
+          <div className="chatgpt-output">
+            <h2>Code généré :</h2>
+            <pre>{generatedCode}</pre>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
