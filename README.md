@@ -8,6 +8,8 @@
 - Exécuter : venv\Scripts\activate
 - Exécuter : pip install -r requirements.txt
 - Exécuter : deactivate
+- pip install langchain-openai
+- pip install langchain
 
 ## Ajout du fichier .env à la racine du projet
 
@@ -23,4 +25,5 @@ TAVILY_API_KEY=
 - Ouvrir un terminal et se mettre dans backend : cd backend
 - Lancer la commande suivante : python app.py
 - Ouvrir un deuxième terminal et se mettre dans frontend : cd frontend
+- npm install
 - Lancer la commande suivante : npm start
